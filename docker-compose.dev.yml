@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+
+  db:
+    container_name: cash-database
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=cash
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=strongpassword
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    networks:
+      - main
+    restart: always
+
+  pgadmin:
+    container_name: cash-pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - 5050:80
+    networks:
+      - main
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: 'pg_pass'
+
+volumes:
+    postgres-data:
+
+networks:
+  main:
