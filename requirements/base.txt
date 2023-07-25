@@ -12,3 +12,4 @@ Faker==19.2.0
 factory-boy==3.3.0
 pytest==7.4.0
 pytest-django==4.5.2
+coverage==7.2.7
