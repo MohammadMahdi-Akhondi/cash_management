@@ -16,6 +16,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 LOCAL_APPS = [
     'cash.core.apps.CoreConfig',
+    'cash.user.apps.UserConfig',
 ]
 
 THIRD_PARTY_APPS = [
@@ -95,6 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'user.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
