@@ -23,4 +23,4 @@ jobs:
 
       # Runs tests using the Django test command
       - name: Run tests
-        run: docker exec link-shortener pytest
+        run: docker exec cash-back pytest
