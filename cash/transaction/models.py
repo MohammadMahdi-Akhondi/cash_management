@@ -15,6 +15,7 @@ class Category(BaseModel):
     parent = models.ForeignKey(
         'self',
         on_delete=models.CASCADE,
+        null=True, blank=True,
         verbose_name=_('parent')
     )
 
@@ -28,7 +29,7 @@ class Category(BaseModel):
 
 class Transaction(BaseModel):
 
-    class KindChoices(models.TextChoices):
+    class TypeChoices(models.TextChoices):
         INCOME = 'I', _('income')
         EXPENSE = 'E', _('expense')
 
@@ -40,7 +41,7 @@ class Transaction(BaseModel):
     amount = models.PositiveIntegerField(verbose_name=_('amount'))
     transaction_type = models.CharField(
         max_length=1,
-        choices=KindChoices.choices,
+        choices=TypeChoices.choices,
         verbose_name=_('type')
     )
     category = models.ForeignKey(
