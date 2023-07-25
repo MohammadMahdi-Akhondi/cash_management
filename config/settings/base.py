@@ -17,6 +17,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 LOCAL_APPS = [
     'cash.core.apps.CoreConfig',
     'cash.user.apps.UserConfig',
+    'cash.transaction.apps.TransactionConfig',
 ]
 
 THIRD_PARTY_APPS = [
