@@ -36,7 +36,7 @@ def test_create_with_invalid_data(api_client):
 
 
 @pytest.mark.django_db
-def test_create_with_unauthorized_user():
+def test_update_with_unauthenticated_user():
     client = Client()
     url = reverse('api:transaction:create_transaction')
 

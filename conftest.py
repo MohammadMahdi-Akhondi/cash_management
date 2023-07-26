@@ -6,6 +6,7 @@ import pytest
 from cash.tests.factories import (
     UserFactory,
     CategoryFactory,
+    TransactionFactory,
 )
 
 
@@ -28,3 +29,8 @@ def user():
 @pytest.fixture
 def category():
     return CategoryFactory()
+
+
+@pytest.fixture
+def transaction():
+    return TransactionFactory()

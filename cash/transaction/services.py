@@ -20,3 +20,18 @@ def create_transaction(*,
         category=category,
         date=date,
     )
+
+
+def update_transaction(*,
+        transaction: Transaction,
+        amount: int, 
+        transaction_type: str,
+        category: Category,
+        date:datetime.date) -> Transaction:
+
+    transaction.amount = amount
+    transaction.transaction_type = transaction_type
+    transaction.category = category
+    transaction.date = date
+    transaction.save()
+    return transaction
