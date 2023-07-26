@@ -12,12 +12,6 @@ class Category(BaseModel):
         max_length=150,
         verbose_name=_('name')
     )
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.CASCADE,
-        null=True, blank=True,
-        verbose_name=_('parent')
-    )
 
     class Meta:
         verbose_name = _('category')
