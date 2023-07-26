@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from .models import Transaction, Category
 from datetime import datetime

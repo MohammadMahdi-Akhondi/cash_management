@@ -11,6 +11,7 @@ from rest_framework import status
 from .validators import validate_transaction_id
 from .permission import IsOwnerOrAdmin
 from . models import Transaction
+from cash.api import pagination
 from . import selectors
 from . import services
 
@@ -57,7 +58,7 @@ class CreateTransactionApi(APIView):
 
         except DatabaseError as e:
             return Response(
-                data=f'database error: {e}',
+                data={'detail': f'database error: {e}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -120,7 +121,7 @@ class UpdateTransactionApi(APIView):
 
         except DatabaseError as e:
             return Response(
-                data=f'database error: {e}',
+                data={'detail': f'database error: {e}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -159,4 +160,75 @@ class DeleteTransactionApi(APIView):
 
         return Response(
             status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class ListTransactionApi(APIView):
+    authentication_classes = (JWTAuthentication, )
+    permission_classes = (permissions.IsAuthenticated, )
+
+    class Pagination(pagination.LimitOffsetPagination):
+        default_limit = 10
+
+    class InputListTransactionSerializer(serializers.Serializer):
+        date = serializers.DateField(required=False)
+        category__in = serializers.CharField(required=False)
+        amount__range = serializers.CharField(required=False)
+        transaction_type = serializers.ChoiceField(
+            required=False,
+            choices=Transaction.TypeChoices.choices,
+        )
+        order_by = serializers.ChoiceField(
+            required=False,
+            choices=[
+                'amount',
+                'category',
+                'date',
+                'transaction_type'
+            ],
+        )
+        date__range = serializers.ChoiceField(
+            required=False,
+            choices=(
+                'today',
+                'yesterday',
+                'week',
+                'month',
+                'year',
+            )
+        )
+
+    class OutputListTransactionSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Transaction
+            exclude = ('deleted_at', )
+
+    @extend_schema(
+        parameters=[InputListTransactionSerializer],
+        responses=OutputListTransactionSerializer,
+    )
+    def get(self, request):
+        filter_serializer = self.InputListTransactionSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+        print(filter_serializer.validated_data)
+
+        try:
+            query = selectors.list_transaction(
+                order_by=filter_serializer.validated_data.pop('order_by', 'date'),
+                filters=filter_serializer.validated_data,
+                user=request.user,
+            )
+
+        except Exception as e:
+            return Response(
+                data={'detail': 'Filter Error - ' + str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return pagination.get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=self.OutputListTransactionSerializer,
+            queryset=query,
+            request=request,
+            view=self,
         )
