@@ -5,7 +5,7 @@ from cash.transaction.services import update_transaction
 
 
 @pytest.mark.django_db
-def test_create_transaction(transaction, category):
+def test_update_transaction(transaction, category):
     data = {
         'transaction': transaction,
         'amount': 125,

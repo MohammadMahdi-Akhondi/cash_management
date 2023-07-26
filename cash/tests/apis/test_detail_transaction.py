@@ -8,8 +8,6 @@ import pytest
 @pytest.mark.django_db
 def test_detail_with_valid_data(api_client, transaction):
     url = reverse('api:transaction:detail_transaction', args=[transaction.id])
-    refresh = RefreshToken.for_user(transaction.user)
-    api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
     response = api_client.get(path=url)
 
     assert response.status_code == status.HTTP_200_OK
@@ -26,8 +24,10 @@ def test_detail_with_unauthenticated_user(transaction):
 
 
 @pytest.mark.django_db
-def test_detail_with_unauthorized_user(api_client, transaction):
+def test_detail_with_unauthorized_user(api_client, transaction, user):
     url = reverse('api:transaction:detail_transaction', args=[transaction.id])
+    refresh = RefreshToken.for_user(user)
+    api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
     response = api_client.get(path=url)
 

@@ -35,3 +35,8 @@ def update_transaction(*,
     transaction.date = date
     transaction.save()
     return transaction
+
+
+def delete_transaction(*, transaction: Transaction) -> None:
+    transaction.deleted_at = datetime.now()
+    transaction.save()

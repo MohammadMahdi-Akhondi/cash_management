@@ -8,16 +8,21 @@ import pytest
 @pytest.mark.django_db
 def test_create_with_valid_data(api_client, category):
     url = reverse('api:transaction:create_transaction')
+    date = datetime.now().date()
     data = {
         'amount': 150,
         'transaction_type': 'I',
         'category': category.id,
-        'date': datetime.now().date(),
+        'date': date,
     }
 
     response = api_client.post(path=url, data=data)
 
     assert response.status_code == status.HTTP_201_CREATED
+    assert response.data.get('amount') == 150
+    assert response.data.get('transaction_type') == 'I'
+    assert response.data.get('category') == category.id
+    assert response.data.get('date') == str(date)
 
 
 @pytest.mark.django_db
@@ -33,6 +38,7 @@ def test_create_with_invalid_data(api_client):
     response = api_client.post(path=url, data=data)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data.get('id') == None
 
 
 @pytest.mark.django_db

@@ -129,13 +129,12 @@ class DetailTransactionApi(APIView):
     authentication_classes = (JWTAuthentication, )
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdmin)
 
-
     class OutputDetailTransactionSerializer(serializers.ModelSerializer):
         class Meta:
             model = Transaction
             exclude = ('deleted_at', )
 
-    @extend_schema(responses=OutputDetailTransactionSerializer)
+    @extend_schema(request=None, responses=OutputDetailTransactionSerializer)
     def get(self, request, transaction_id):
 
         transaction = validate_transaction_id(transaction_id)
@@ -144,4 +143,20 @@ class DetailTransactionApi(APIView):
         return Response(
             data=self.OutputDetailTransactionSerializer(instance=transaction).data,
             status=status.HTTP_200_OK,
+        )
+
+
+class DeleteTransactionApi(APIView):
+    authentication_classes = (JWTAuthentication, )
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdmin)
+
+    @extend_schema(request=None, responses=None)
+    def delete(self, request, transaction_id):
+
+        transaction = validate_transaction_id(transaction_id)
+        self.check_object_permissions(request, transaction)
+        services.delete_transaction(transaction=transaction)
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
         )
