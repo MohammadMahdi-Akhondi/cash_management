@@ -35,3 +35,8 @@ def category():
 @pytest.fixture
 def transaction(owner):
     return TransactionFactory(user=owner)
+
+
+@pytest.fixture
+def transaction2(owner):
+    return TransactionFactory(user=owner)

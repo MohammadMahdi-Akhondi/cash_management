@@ -4,6 +4,7 @@ from . import apis
 
 
 urlpatterns = [
+    path('balance/', apis.BalanceApi.as_view(), name='balance'),
     path('list/', apis.ListTransactionApi.as_view(), name='list_transaction'),
     path('create/', apis.CreateTransactionApi.as_view(), name='create_transaction'),
     path('update/<int:transaction_id>/', apis.UpdateTransactionApi.as_view(), name='update_transaction'),

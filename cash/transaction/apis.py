@@ -232,3 +232,21 @@ class ListTransactionApi(APIView):
             request=request,
             view=self,
         )
+
+
+class BalanceApi(APIView):
+    authentication_classes = (JWTAuthentication, )
+    permission_classes = (permissions.IsAuthenticated, )
+
+    class OutputBalanceSerializer(serializers.Serializer):
+        balance = serializers.IntegerField()
+
+    @extend_schema(request=None, responses=OutputBalanceSerializer)
+    def get(self, request):
+        data = {
+            'balance': selectors.get_balance(user=request.user),
+        }
+        return Response(
+            data=self.OutputBalanceSerializer(instance=data).data,
+            status=status.HTTP_200_OK,
+        )
