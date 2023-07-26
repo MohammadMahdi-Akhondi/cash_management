@@ -1,5 +1,4 @@
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
 from django.db import DatabaseError
 from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -9,6 +8,7 @@ from rest_framework import serializers
 from rest_framework import permissions
 from rest_framework import status
 
+from .validators import validate_transaction_id
 from .permission import IsOwnerOrAdmin
 from . models import Transaction
 from . import selectors
@@ -97,14 +97,9 @@ class UpdateTransactionApi(APIView):
         responses=OutputUpdateTransactionSerializer,
     )
     def put(self, request, transaction_id):
-        transaction = selectors.get_transaction_by_id(transaction_id=transaction_id)
-        if not transaction:
-            raise ValidationError({'transaction_id': _('transaction not found')})
 
+        transaction = validate_transaction_id(transaction_id)
         self.check_object_permissions(request, transaction)
-
-        if transaction.user != request.user:
-            raise ValidationError({'transaction_id': _('transaction not found')})
 
         serializer = self.InputUpdateTransactionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -128,3 +123,25 @@ class UpdateTransactionApi(APIView):
                 data=f'database error: {e}',
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class DetailTransactionApi(APIView):
+    authentication_classes = (JWTAuthentication, )
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdmin)
+
+
+    class OutputDetailTransactionSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Transaction
+            exclude = ('deleted_at', )
+
+    @extend_schema(responses=OutputDetailTransactionSerializer)
+    def get(self, request, transaction_id):
+
+        transaction = validate_transaction_id(transaction_id)
+        self.check_object_permissions(request, transaction)
+
+        return Response(
+            data=self.OutputDetailTransactionSerializer(instance=transaction).data,
+            status=status.HTTP_200_OK,
+        )
