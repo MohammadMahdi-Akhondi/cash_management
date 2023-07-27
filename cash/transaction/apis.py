@@ -17,10 +17,18 @@ from . import services
 
 
 class CreateTransactionApi(APIView):
+    """
+    API endpoint for creating a new Transaction object.
+    """
+
     authentication_classes = (JWTAuthentication, )
     permission_classes = (permissions.IsAuthenticated, )
 
     class InputCreateTransactionSerializer(serializers.ModelSerializer):
+        """
+        Serializer class for validating input when creating a new Transaction object.
+        """
+
         class Meta:
             model = Transaction
             fields = (
@@ -31,6 +39,10 @@ class CreateTransactionApi(APIView):
             )
 
     class OutputCreateTransactionSerializer(serializers.ModelSerializer):
+        """
+        Serializer class for returning output when creating a new Transaction object.
+        """
+
         class Meta:
             model = Transaction
             exclude = ('deleted_at', )
@@ -40,6 +52,10 @@ class CreateTransactionApi(APIView):
         responses=OutputCreateTransactionSerializer,
     )
     def post(self, request):
+        """
+        This endpoint for create a new Transaction object with the given input data and returns it in the output format.
+        """
+
         serializer = self.InputCreateTransactionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -64,10 +80,18 @@ class CreateTransactionApi(APIView):
 
 
 class UpdateTransactionApi(APIView):
+    """
+    API endpoint for updating an existing Transaction object.
+    """
+
     authentication_classes = (JWTAuthentication, )
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdmin)
 
     class InputUpdateTransactionSerializer(serializers.Serializer):
+        """
+        Serializer class for validating input when updating an existing Transaction object.
+        """
+
         amount = serializers.IntegerField()
         transaction_type = serializers.ChoiceField(
             choices=Transaction.TypeChoices.choices,
@@ -85,7 +109,7 @@ class UpdateTransactionApi(APIView):
             category= selectors.get_category_by_id(category_id=category)
             if not category:
                 raise serializers.ValidationError(_('category not found'))
-    
+
             return category
 
     class OutputUpdateTransactionSerializer(serializers.ModelSerializer):
@@ -98,6 +122,9 @@ class UpdateTransactionApi(APIView):
         responses=OutputUpdateTransactionSerializer,
     )
     def put(self, request, transaction_id):
+        """
+        This endpoint for Update an existing Transaction object with the given input data and returns it in the output format.
+        """
 
         transaction = validate_transaction_id(transaction_id)
         self.check_object_permissions(request, transaction)
@@ -127,16 +154,26 @@ class UpdateTransactionApi(APIView):
 
 
 class DetailTransactionApi(APIView):
+    """
+    API endpoint for retrieving details of a Transaction object.
+    """
+
     authentication_classes = (JWTAuthentication, )
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdmin)
 
     class OutputDetailTransactionSerializer(serializers.ModelSerializer):
+        """
+        Serializer class for returning output when retrieving details of a Transaction object.
+        """
         class Meta:
             model = Transaction
             exclude = ('deleted_at', )
 
     @extend_schema(request=None, responses=OutputDetailTransactionSerializer)
     def get(self, request, transaction_id):
+        """
+        This endpoint for retrieve the details of a Transaction object with the given ID and returns it in the output format.
+        """
 
         transaction = validate_transaction_id(transaction_id)
         self.check_object_permissions(request, transaction)
@@ -148,11 +185,24 @@ class DetailTransactionApi(APIView):
 
 
 class DeleteTransactionApi(APIView):
+    """
+    API endpoint for deleting an existing Transaction object.
+    """
+
     authentication_classes = (JWTAuthentication, )
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdmin)
 
     @extend_schema(request=None, responses=None)
     def delete(self, request, transaction_id):
+        """
+        This endpoint for delete an existing Transaction object with the given ID.
+        
+        Args:
+            transaction_id: The ID of the Transaction object to delete.
+        
+        Returns:
+            Response: A HTTP 204 No Content response indicating the deletion was successful.
+        """
 
         transaction = validate_transaction_id(transaction_id)
         self.check_object_permissions(request, transaction)
@@ -164,13 +214,25 @@ class DeleteTransactionApi(APIView):
 
 
 class ListTransactionApi(APIView):
+    """
+    API endpoint for listing Transaction objects with filtering and pagination.
+    """
+
     authentication_classes = (JWTAuthentication, )
     permission_classes = (permissions.IsAuthenticated, )
 
     class Pagination(pagination.LimitOffsetPagination):
+        """
+        Pagination class for limiting the number of Transaction objects returned in a single request.
+        """
+
         default_limit = 10
 
     class InputListTransactionSerializer(serializers.Serializer):
+        """
+        Serializer class for validating input when listing Transaction objects with filtering.
+        """
+
         date = serializers.DateField(required=False)
         category__in = serializers.CharField(required=False)
         amount__range = serializers.CharField(required=False)
@@ -208,9 +270,33 @@ class ListTransactionApi(APIView):
         responses=OutputListTransactionSerializer,
     )
     def get(self, request):
+        """
+        This endpoint for list Transaction objects with filtering and pagination based on the given input parameters.
+        
+        Queries:
+
+            date: Filter transactions by exact date
+
+            category__in: Filter transactions based on categories ID.
+                for example: category__in=1,2,3
+
+            amount__range: Filter transactions based on amount range.
+                for example: amount__range=10, 100
+
+            transaction_type: Filter transactions based on type of transaction
+
+            date__range: Filter transactions based on date range.
+                for example: week
+
+            order_by: Order transaction based on transaction fields
+                for example: amount
+        
+        Returns:
+            Response: A paginated list of Transaction objects in the output format.
+        """
+
         filter_serializer = self.InputListTransactionSerializer(data=request.query_params)
         filter_serializer.is_valid(raise_exception=True)
-        print(filter_serializer.validated_data)
 
         try:
             query = selectors.list_transaction(
@@ -235,14 +321,24 @@ class ListTransactionApi(APIView):
 
 
 class BalanceApi(APIView):
+    """
+    API endpoint for retrieving the balance of a user's Transaction objects.
+    """
+
     authentication_classes = (JWTAuthentication, )
     permission_classes = (permissions.IsAuthenticated, )
 
     class OutputBalanceSerializer(serializers.Serializer):
+        """
+        Serializer class for returning output when retrieving the balance of a user's Transaction objects.
+        """
         balance = serializers.IntegerField()
 
     @extend_schema(request=None, responses=OutputBalanceSerializer)
     def get(self, request):
+        """
+        This endpoint for Retrieve the balance of a user's Transaction objects and returns it in the output format.
+        """
         data = {
             'balance': selectors.get_balance(user=request.user),
         }

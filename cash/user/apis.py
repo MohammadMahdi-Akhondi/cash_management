@@ -46,6 +46,7 @@ class RegisterApi(APIView):
 
     @extend_schema(request=InputRegisterSerializer, responses=OutputRegisterSerializer)
     def post(self, request):
+        """This endpoint is for user registration using username and password."""
         serializer = self.InputRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

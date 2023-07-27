@@ -10,6 +10,10 @@ from .models import Transaction
 
 
 class TransactionFilter(FilterSet):
+    """
+    Custom filter class for filtering Transaction objects by date range, category, and amount range.
+    """
+
     date__range = DateRangeFilter(field_name='date')
     category__in = CharFilter(method='filter_category__in')
     amount__range = CharFilter(method='filter_amount__range')
@@ -27,11 +31,15 @@ class TransactionFilter(FilterSet):
         limit = 2
         amount__range = value.split(',')
         if len(amount__range) != limit:
-            raise ValidationError({'amount__range': _('Please just add two amount with , in the middle')})
+            raise ValidationError(_('Please just add two amount with , in the middle'))
 
+        try:
+            amount__range = [int(amount) for amount in amount__range]
+
+        except ValueError:
+            raise ValidationError(_('Please enter valid integer'))
+        
         from_amount, to_amount = amount__range
-        from_amount = int(from_amount)
-        to_amount = int(to_amount)
 
         return queryset.filter(amount__range=(from_amount, to_amount))
 
@@ -39,6 +47,5 @@ class TransactionFilter(FilterSet):
         model = Transaction
         fields = (
             'date',
-            'category',
             'transaction_type',
         )
